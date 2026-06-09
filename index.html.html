@@ -1385,8 +1385,10 @@ const EMBEDDED_SHEETS_URL = "";
 
         // Generate publish version - HTML with employee data embedded
         function generatePublishVersion() {
-            if (employees.length === 0) {
-                alert('لا يوجد موظفين. أضف موظفين أولاً.');
+            const sheetsURLEarly = document.getElementById('sheetsURL').value.trim();
+            
+            if (employees.length === 0 && !sheetsURLEarly) {
+                alert('لا يوجد موظفين ولا رابط Google Sheets!\n\nيجب إما:\n- إضافة موظفين محلياً\n- أو إضافة رابط Google Sheets');
                 return;
             }
 
