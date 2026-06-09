@@ -1,0 +1,1329 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SAAK Employee V-Cards</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #e8e8e8;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .app-container { max-width: 1400px; margin: 0 auto; }
+        .header {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        .header h1 { color: #193D71; font-size: 24px; margin-bottom: 10px; }
+        .header p { color: #666; font-size: 14px; }
+        .config-section {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .config-section h3 { color: #193D71; font-size: 15px; margin-bottom: 12px; }
+        .config-section input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 13px;
+            direction: ltr;
+            text-align: left;
+        }
+        .config-section .note { color: #666; font-size: 12px; margin-top: 8px; }
+        .publish-warning {
+            background: #fff3cd;
+            color: #856404;
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            border-left: 4px solid #ffc107;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+        .main-grid {
+            display: grid;
+            grid-template-columns: 380px 1fr;
+            gap: 20px;
+        }
+        @media (max-width: 900px) {
+            .main-grid { grid-template-columns: 1fr; }
+        }
+        .editor-panel {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 20px;
+            max-height: calc(100vh - 40px);
+            overflow-y: auto;
+        }
+        .editor-panel h2 {
+            color: #193D71;
+            font-size: 18px;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #04875D;
+        }
+        .form-group { margin-bottom: 15px; }
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            color: #333;
+            font-weight: 500;
+            font-size: 13px;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 13px;
+            direction: ltr;
+            text-align: left;
+        }
+        .form-group input:focus {
+            outline: none;
+            border-color: #04875D;
+            background: #f0faf8;
+        }
+        .photo-upload-btn {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            border: 2px dashed #04875D;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            background: #f0faf8;
+            color: #04875D;
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: 12px;
+        }
+        .photo-upload-btn:hover { background: #e0f5ee; }
+        .photo-cropper {
+            display: none;
+            background: #f5f5f5;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 12px;
+        }
+        .photo-cropper.active { display: block; }
+        .cropper-circle {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            margin: 0 auto;
+            overflow: hidden;
+            position: relative;
+            background: #ddd;
+            border: 3px solid #04875D;
+            cursor: move;
+            user-select: none;
+        }
+        .cropper-circle img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            max-width: none;
+            pointer-events: none;
+        }
+        .cropper-hint {
+            text-align: center;
+            color: #666;
+            font-size: 11px;
+            margin-top: 8px;
+        }
+        .cropper-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 12px;
+            padding: 10px;
+            background: white;
+            border-radius: 6px;
+        }
+        .cropper-controls label {
+            font-size: 12px;
+            color: #555;
+            min-width: 60px;
+        }
+        .cropper-controls input[type="range"] { flex: 1; }
+        .cropper-controls .value {
+            font-size: 12px;
+            color: #04875D;
+            font-weight: 600;
+            min-width: 50px;
+            text-align: center;
+        }
+        .btn {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s;
+            margin-bottom: 8px;
+        }
+        .btn-primary { background: #04875D; color: white; }
+        .btn-primary:hover { background: #036c49; }
+        .btn-secondary { background: #193D71; color: white; }
+        .btn-secondary:hover { background: #122b52; }
+        .btn-danger { background: #e74c3c; color: white; }
+        .btn-danger:hover { background: #c0392b; }
+        .btn-outline {
+            background: white;
+            color: #04875D;
+            border: 2px solid #04875D;
+        }
+        .btn-outline:hover { background: #f0faf8; }
+        .btn-publish {
+            background: linear-gradient(135deg, #ff9800 0%, #ff6f00 100%);
+            color: white;
+            font-weight: 700;
+        }
+        .btn-publish:hover { transform: translateY(-1px); box-shadow: 0 4px 8px rgba(0,0,0,0.15); }
+        .success-msg {
+            background: #d4edda;
+            color: #155724;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            display: none;
+            font-size: 13px;
+            border: 1px solid #c3e6cb;
+        }
+        .success-msg.show { display: block; }
+        .employees-section {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .employees-section h2 {
+            color: #193D71;
+            font-size: 18px;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #04875D;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #999;
+        }
+        .empty-state-icon { font-size: 48px; margin-bottom: 15px; }
+        .employees-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+            gap: 25px;
+        }
+        .vcard {
+            background: #ffffff;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+            display: flex;
+            flex-direction: column;
+            direction: ltr;
+        }
+        .vcard-top {
+            background: linear-gradient(135deg, #1a3a6b 0%, #234876 30%, #2e6c6e 60%, #3a8f6b 100%);
+            padding: 40px 25px 0;
+            text-align: center;
+            color: white;
+        }
+        .vcard-photo-wrapper {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        .vcard-photo-circle {
+            width: 130px;
+            height: 130px;
+            border-radius: 50%;
+            overflow: hidden;
+            position: relative;
+            background: rgba(255,255,255,0.15);
+        }
+        .vcard-photo-circle img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            max-width: none;
+            user-select: none;
+            pointer-events: none;
+        }
+        .vcard-photo-placeholder {
+            width: 130px;
+            height: 130px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 50px;
+        }
+        .vcard-name {
+            font-size: 26px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+        .vcard-position {
+            font-size: 13px;
+            letter-spacing: 3px;
+            font-weight: 300;
+            text-transform: uppercase;
+            margin-bottom: 30px;
+            opacity: 0.95;
+        }
+        .vcard-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            border-top: 1px solid rgba(255,255,255,0.25);
+        }
+        .vcard-action {
+            padding: 18px 8px;
+            text-align: center;
+            border-right: 1px solid rgba(255,255,255,0.25);
+            cursor: pointer;
+            transition: background 0.2s;
+            text-decoration: none;
+            color: white;
+        }
+        .vcard-action:last-child { border-right: none; }
+        .vcard-action:hover { background: rgba(0,0,0,0.08); }
+        .vcard-action-icon { display: block; margin-bottom: 8px; }
+        .vcard-action-icon svg {
+            width: 28px;
+            height: 28px;
+            stroke: white;
+            stroke-width: 2;
+            fill: none;
+        }
+        .vcard-action-label {
+            font-size: 12px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+        .vcard-bottom {
+            background: #f5f5f5;
+            padding: 25px 20px;
+            flex: 1;
+        }
+        .vcard-info-box {
+            background: #eeeeee;
+            border-radius: 18px;
+            padding: 25px 20px;
+        }
+        .info-row {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            padding: 14px 0;
+        }
+        .info-row.with-address { align-items: flex-start; }
+        .info-divider {
+            height: 1px;
+            background: linear-gradient(to right, transparent, #04875D 20%, #04875D 80%, transparent);
+            opacity: 0.4;
+        }
+        .info-icon {
+            width: 30px;
+            height: 30px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .info-icon svg {
+            width: 28px;
+            height: 28px;
+            fill: #04875D;
+        }
+        .info-icon svg.stroke-icon {
+            fill: none;
+            stroke: #04875D;
+            stroke-width: 2;
+        }
+        .info-text {
+            flex: 1;
+            color: #193D71;
+            font-weight: 700;
+            font-size: 14px;
+            letter-spacing: 0.3px;
+        }
+        .info-text a { color: #193D71; text-decoration: none; }
+        .info-text a:hover { color: #04875D; }
+        .address-text { line-height: 1.5; }
+        .show-map {
+            color: #04875D;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 13px;
+            letter-spacing: 1px;
+            margin-top: 8px;
+            display: inline-block;
+        }
+        .show-map:hover { text-decoration: underline; }
+        .save-contacts-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            background: linear-gradient(135deg, #1a3a6b 0%, #234876 30%, #2e6c6e 60%, #3a8f6b 100%);
+            color: white;
+            padding: 18px 20px;
+            border-radius: 14px;
+            margin: 20px 0 15px;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 15px;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            cursor: pointer;
+            border: none;
+            width: 100%;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .save-contacts-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .save-contacts-btn svg {
+            width: 24px;
+            height: 24px;
+            fill: white;
+        }
+        .vcard-logo {
+            text-align: center;
+            padding: 15px 0 10px;
+        }
+        .vcard-logo img { max-width: 220px; height: auto; }
+        .card-actions {
+            display: flex;
+            gap: 8px;
+            padding: 15px 20px;
+            background: white;
+            border-top: 1px solid #eee;
+        }
+        .card-actions button {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        .btn-edit { background: #193D71; color: white; }
+        .btn-delete-card { background: #e74c3c; color: white; }
+        .btn-nfc { background: #04875D; color: white; }
+        .btn-edit:hover { background: #122b52; }
+        .btn-delete-card:hover { background: #c0392b; }
+        .btn-nfc:hover { background: #036c49; }
+        .nfc-link-box {
+            background: #f0faf8;
+            border: 2px solid #04875D;
+            border-radius: 8px;
+            padding: 12px;
+            margin: 10px 20px;
+            word-break: break-all;
+            font-family: monospace;
+            font-size: 11px;
+            color: #193D71;
+            direction: ltr;
+            text-align: left;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .modal.active { display: flex; }
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            max-width: 700px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .modal-content h3 {
+            color: #193D71;
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 20px;
+        }
+        .nfc-link-display {
+            background: #f0faf8;
+            border: 2px solid #04875D;
+            border-radius: 8px;
+            padding: 15px;
+            word-break: break-all;
+            font-family: monospace;
+            font-size: 12px;
+            color: #193D71;
+            margin-bottom: 15px;
+            direction: ltr;
+            text-align: left;
+        }
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            background: #04875D;
+            color: white;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+            margin-right: 8px;
+        }
+        .toolbar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .toolbar button { flex: 1; min-width: 140px; }
+        .admin-links-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .admin-link-item {
+            background: #f5f5f5;
+            border-radius: 8px;
+            padding: 15px;
+            border-left: 4px solid #04875D;
+            direction: ltr;
+        }
+        .admin-link-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            direction: rtl;
+        }
+        .admin-link-item-name {
+            color: #193D71;
+            font-weight: 700;
+            font-size: 14px;
+        }
+        .admin-link-item-position {
+            color: #04875D;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .admin-link-item-url {
+            background: white;
+            padding: 8px 10px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 11px;
+            color: #193D71;
+            word-break: break-all;
+            margin-bottom: 8px;
+            border: 1px solid #ddd;
+        }
+        .admin-link-item-actions {
+            display: flex;
+            gap: 6px;
+            direction: rtl;
+        }
+        .admin-link-item-actions button {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: 500;
+            flex: 1;
+        }
+        .btn-copy-mini { background: #04875D; color: white; }
+        .btn-open-mini { background: #193D71; color: white; }
+        .btn-copy-mini:hover { background: #036c49; }
+        .btn-open-mini:hover { background: #122b52; }
+        .not-found-page {
+            display: none;
+            text-align: center;
+            padding: 80px 20px;
+            background: white;
+            border-radius: 16px;
+            max-width: 500px;
+            margin: 50px auto;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+        }
+        .not-found-page.show { display: block; }
+        .not-found-icon { font-size: 80px; margin-bottom: 20px; }
+        .not-found-page h2 { color: #193D71; margin-bottom: 15px; }
+        .not-found-page p { color: #666; line-height: 1.6; }
+        .not-found-logo { margin-top: 30px; }
+        .not-found-logo img { max-width: 180px; }
+        @media print {
+            body { background: white; padding: 0; }
+            .editor-panel, .header, .card-actions, .toolbar, .config-section, .nfc-link-box { display: none !important; }
+            .main-grid { grid-template-columns: 1fr; }
+            .employees-section { box-shadow: none; padding: 0; }
+            .employees-grid { grid-template-columns: 1fr; gap: 30px; }
+            .vcard { page-break-inside: avoid; box-shadow: none; }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container" id="adminContainer">
+        <div class="header">
+            <h1>🪪 SAAK Employee V-Cards Manager</h1>
+            <p>إدارة بطاقات الموظفين - يمكنك إضافة وتعديل بيانات الموظفين وإنشاء روابط NFC</p>
+        </div>
+
+        <div class="config-section">
+            <h3>🌐 رابط الموقع المستضاف (Netlify أو غيره)</h3>
+            <input type="url" id="baseURL" placeholder="https://your-site.netlify.app/" />
+            <p class="note">💡 أدخل رابط الموقع بعد رفع الملف على Netlify - الرابط بيستخدم في إنشاء روابط NFC للموظفين</p>
+            <div class="publish-warning">
+                ⚠️ <strong>مهم:</strong> بعد إضافة أو تعديل الموظفين، اضغط <strong>"📦 إنشاء نسخة النشر"</strong> لتحميل ملف HTML جديد فيه بيانات الموظفين، وارفعه على Netlify ليعمل الرابط مع أي شخص.
+            </div>
+        </div>
+
+        <div class="main-grid">
+            <div class="editor-panel">
+                <h2 id="formTitle">➕ إضافة موظف</h2>
+                <div class="success-msg" id="successMsg">✅ تم الحفظ بنجاح!</div>
+
+                <div class="form-group">
+                    <label>الاسم الإنجليزي *</label>
+                    <input type="text" id="empName" placeholder="ABDULAZIZ ALOTAIBI" />
+                </div>
+
+                <div class="form-group">
+                    <label>المنصب *</label>
+                    <input type="text" id="empPosition" placeholder="HUMAN RESOURCES DIRECTOR" />
+                </div>
+
+                <div class="form-group">
+                    <label>رقم الجوال *</label>
+                    <input type="tel" id="empPhone" placeholder="+966551688938" />
+                </div>
+
+                <div class="form-group">
+                    <label>البريد الإلكتروني *</label>
+                    <input type="email" id="empEmail" placeholder="email@saaksa.com" />
+                </div>
+
+                <div class="form-group">
+                    <label>صورة الموظف</label>
+                    <label class="photo-upload-btn" for="photoInput">📸 اختر صورة</label>
+                    <input type="file" id="photoInput" accept="image/*" style="display:none;" onchange="handlePhotoUpload(event)" />
+                    
+                    <div class="photo-cropper" id="photoCropper">
+                        <div class="cropper-circle" id="cropperCircle">
+                            <img id="cropperImg" />
+                        </div>
+                        <div class="cropper-hint">🖐️ اسحب الصورة لتغيير موقعها</div>
+                        <div class="cropper-controls">
+                            <label>📏 الحجم</label>
+                            <input type="range" id="zoomSlider" min="10" max="400" value="100" oninput="updateZoom()" />
+                            <span class="value" id="zoomValue">100%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="btn btn-primary" onclick="saveEmployee()">💾 حفظ الموظف</button>
+                <button class="btn btn-outline" onclick="resetForm()">🔄 موظف جديد</button>
+            </div>
+
+            <div class="employees-section">
+                <h2>👥 الموظفون <span class="badge" id="employeeCount">0</span></h2>
+
+                <div class="toolbar">
+                    <button class="btn btn-publish" onclick="generatePublishVersion()">📦 إنشاء نسخة النشر</button>
+                    <button class="btn btn-primary" onclick="openAdminLinksModal()">🔗 روابط العرض</button>
+                    <button class="btn btn-secondary" onclick="exportData()">📤 تصدير البيانات</button>
+                    <button class="btn btn-outline" onclick="document.getElementById('importInput').click()">📥 استيراد البيانات</button>
+                    <input type="file" id="importInput" accept=".json" style="display:none;" onchange="importData(event)" />
+                </div>
+
+                <div id="employeesList"></div>
+            </div>
+        </div>
+
+        <div class="modal" id="nfcModal">
+            <div class="modal-content">
+                <h3>🔗 رابط NFC للموظف</h3>
+                <p style="text-align:center; color:#666; margin-bottom:20px;" id="nfcEmployeeName"></p>
+                <div class="nfc-link-display" id="nfcLinkText"></div>
+                <button class="btn btn-primary" onclick="copyNFCLink()">📋 نسخ الرابط</button>
+                <button class="btn btn-outline" onclick="closeNFCModal()">إغلاق</button>
+            </div>
+        </div>
+
+        <div class="modal" id="adminLinksModal">
+            <div class="modal-content">
+                <h3>🔗 روابط العرض لجميع الموظفين</h3>
+                <p style="text-align:center; color:#666; margin-bottom:20px; font-size:13px;">
+                    هذه الروابط جاهزة للاستخدام في بطاقات NFC أو رموز QR
+                </p>
+                <div class="admin-links-list" id="adminLinksList"></div>
+                <button class="btn btn-primary" onclick="copyAllLinks()">📋 نسخ جميع الروابط</button>
+                <button class="btn btn-secondary" onclick="exportLinksAsCSV()">📊 تصدير كملف CSV</button>
+                <button class="btn btn-outline" onclick="closeAdminLinksModal()">إغلاق</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="singleViewContainer" style="display:none; max-width:450px; margin:0 auto;"></div>
+    
+    <div class="not-found-page" id="notFoundPage">
+        <div class="not-found-icon">🔍</div>
+        <h2>الموظف غير موجود</h2>
+        <p>عذراً، لم نتمكن من العثور على بيانات هذا الموظف.<br>تأكد من صحة الرابط أو تواصل مع الإدارة.</p>
+        <div class="not-found-logo">
+            <img src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN2ZyBpZD0iTGF5ZXJfMiIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB2aWV3Qm94PSIwIDAgMTQ3Ni44OTIwMSAyNjIuOTcwMTgiPgogIDxnIGlkPSJMYXllcl8xLTIiIGRhdGEtbmFtZT0iTGF5ZXJfMSI+CiAgICA8Zz4KICAgICAgPGc+CiAgICAgICAgPGc+CiAgICAgICAgICA8cGF0aCBkPSJNMjY3LjQxOTkxLDBoMTYuNjY4MTJ2OTYuNjMwMDNoLTgwLjQ5ODcydi0xNS4zMDA1Nmg2My44MzA2MVYwWiIgZmlsbD0iIzFjM2Q3MCIvPgogICAgICAgICAgPHBhdGggZD0iTTQwLjQ0MDkyLDM2LjYzODQ4YzcuMzgwNzktMy4yMjE4MSwxNS41ODIxMi00LjgwMjU0LDI0LjU5OTk1LTQuNzUwMjV2NDkuNDQxMjRoMTIuNzI0MzJ2MTUuMzAwNTZoLTI5Ljk1NTU1di00My43MjU2NWMtMTIuMDc4NzUsNi4xMjE4My0yMC43NTA2OCwxNy4yMzEyMy0yNi4wMDk3NCwzMy4zMzYyM2wtMi4xNzQwMSwxMC4zODk0MkgyLjcxNDQzYy41MzY5Ny0xNy45MzExLDcuMDMyODctMzMuNzE0MzIsMTkuNDg3Ny00Ny4zNDk2OCw0Ljc3NjQtNS4yMDQ3NiwxMC44NTYtOS40MjAwNiwxOC4yMzg4LTEyLjY0MTg3Wk0yMi4xMjE2OCwyMC4xMzEyNmgxNi45MDk0NVYzLjIxNzc4aC0xNi45MDk0NXYxNi45MTM0N1pNNDYuMjc5MTksMjAuMTMxMjZoMTYuOTA5NDVWMy4yMTc3OGgtMTYuOTA5NDV2MTYuOTEzNDdaIiBmaWxsPSIjMWMzZDcwIi8+CiAgICAgICAgICA8cGF0aCBkPSJNMTc2LjA0OTEsMzIuMjEwMDFoMTYuNDI4Nzl2NDkuMTE5NDZoMTEuMTExNDF2MTUuMzAwNTZINzUuMTExMzF2LTE1LjMwMDU2aDEwMC45Mzc3OXYtNDkuMTE5NDZaTTE1My45ODUxNiwxMDUuMDg0NzZoMTYuOTExNDZ2MTYuOTA5NDVoLTE2LjkxMTQ2di0xNi45MDk0NVpNMTc4LjE0MjY3LDEwNS4wODQ3NmgxNi45MTE0NnYxNi45MDk0NWgtMTYuOTExNDZ2LTE2LjkwOTQ1WiIgZmlsbD0iIzFjM2Q3MCIvPgogICAgICAgICAgPHBhdGggZD0iTTM0OC45Mjk0NCwzMi4yMTAwMXY2NC40MjAwMmMwLDcuMDg3MTctMS40NzgxNywxMi42NzAwMi00LjQzMDQ5LDE2Ljc0ODU2LTQuNTA4OTIsNC45MzkzLTEwLjk1MDUyLDcuNDA4OTUtMTkuMzI0OCw3LjQwODk1aC0yNi40OTQ0MnYtMTYuMzQ2MzRoMjcuMjk4ODdjNC45OTM2LS40MzAzOCw3LjE2NzYxLTMuMDMyNzYsNi41MjIwNC03LjgxMTE3LTIxLjc0MjE2LDIuMTQ3ODctMzMuMjI5NjUtNS44NTIzNC0zNC40NjQ0Ny0yMy45OTY2MnYtMTguNjAyODFjMS4yODkxMi0xMy4zMTM1OCw4LjU4OTQ3LTIwLjU4NTc3LDIxLjkwMzA1LTIxLjgyMDU5aDI4Ljk5MDIyWk0zMjEuODcxOSw0OC4wNzM2OGMtNC44ODUuNzUyMTYtNy40MDg5NSwzLjk3Mzk2LTcuNTY5ODQsOS42NjEzOXYxMy4xMjg1NmMtLjIxNTE5LDYuMDA5MjEsMi40OTU3OSw5LjUwMDUxLDguMTMyOTUsMTAuNDY1ODRoOS41ODI5NnYtMzMuMjU1NzloLTEwLjE0NjA3WiIgZmlsbD0iIzFjM2Q3MCIvPgogICAgICAgICAgPHBhdGggZD0iTTM3My45MDg1NSwzMS45Njg2OGMxLjEyNjIyLS4wNTIyOSwyLjI1NDQ2LS4wODA0NCwzLjM4MjY5LS4wODA0NCwxLjAxNzYyLS4wNTIyOSwyLjAzOTI3LS4wODA0NCwzLjA1ODkxLS4wODA0NCw4LjA1MjUsMCwxNS41MTM3NCwxLjkwNjU0LDIyLjM4NTcyLDUuNzE1NTksNy42NzY0Miw0LjI5NTc0LDEzLjIwNjk5LDEwLjczOTM1LDE2LjU4OTY4LDE5LjMyNjgxLDMuMzgwNjgsOC41OTE0OCw0Ljg1Njg0LDE2Ljc0ODU2LDQuNDI2NDYsMjQuNDc5MjloMTMuMTI4NTZ2MTUuMzAwNTZoLTc1LjA1MDc3di0xNS4zMDA1Nmg0NC42OTA5OXYtMy4yMjE4MWMtLjY0MzU2LTIwLjEzMTI2LTExLjUxNTY0LTI5LjcxMjIxLTMyLjYxMjIzLTI4Ljc0Njg3di0xNy4zOTIxMloiIGZpbGw9IiMxYzNkNzAiLz4KICAgICAgICAgIDxwYXRoIGQ9Ik01MTIuNjgwNTIsMGgxNi42NjgxMnY5Ni42MzAwM2gtOTIuNDY4MDd2LTE1LjMwMDU2aDc1Ljc5OTk1VjBaIiBmaWxsPSIjMWMzZDcwIi8+CiAgICAgICAgICA8cGF0aCBkPSJNNTU5LjcyMTU2LDk2LjYzMDAzaC0xNi40MjY3OFYwaDE2LjQyNjc4djk2LjYzMDAzWiIgZmlsbD0iIzFjM2Q3MCIvPgogICAgICAgICAgPHBhdGggZD0iTTcxOS41MTg5Nywwdjk2LjYzMDAzaC04NC4zMDk5NGMtMjEuNDE4MzcsMS40NDgtMzMuMjMxNjYtNy40MDg5NS0zNS40MzE4Mi0yNi41NzQ4N3YtMjkuNzkyNjVoMTYuMTA1MDF2MjAuMTMxMjZjLS4xNjA4OSwxMi4wMjY0Niw0LjI5NTc0LDE5LjAwNTAzLDEzLjM2NTg3LDIwLjkzNTdoNzMuODQ0MVYwaDE2LjQyNjc4Wk02NTYuMjI1MTcsMjguOTA3NzZoMTQuNDk2MTF2OC45MzczOWgtMTAuMDY3NjRjLTIuMDM5MjctLjA1MjI5LTMuMDA0NjEuOTQxMi0yLjg5NiwyLjk4MDQ3djcuMDg3MTdoMTIuOTYzNjR2OC42MTU2MWgtMjIuNTQ4NjJ2LTguNjE1NjFoMy4xNDEzNnYtMTAuODcyMDljLS40MzAzOC0zLjQ4NzI3LDEuMjA2NjctNi4yMDIyOCw0LjkxMTE0LTguMTMyOTVaIiBmaWxsPSIjMWMzZDcwIi8+CiAgICAgICAgICA8cGF0aCBkPSJNNzUwLjkzMjk2LDgxLjQwOTkyaDE1LjEzOTY3djE1LjMwMDU2aC0zMS41NjY0NVYuMDgwNDRoMTYuNDI2Nzh2ODEuMzI5NDdaIiBmaWxsPSIjMWMzZDcwIi8+CiAgICAgICAgICA8cGF0aCBkPSJNMTAzNC45NzczOSwzMi4yOTA0NnY2NC40MjAwMmgtMjY4LjkwNDc2di0xNS4zMDA1NmgxNzMuMTU5NjJ2LTI0Ljk2MTk1aDE2LjgzMzAzdjI0Ljk2MTk1aDIyLjQ2NDE1di0zNy4wNDA3MWgxNi45ODk5djM3LjA0MDcxaDIyLjQ2ODE3di00OS4xMTk0NmgxNi45ODk5WiIgZmlsbD0iIzFjM2Q3MCIvPgogICAgICAgIDwvZz4KICAgICAgICA8dGV4dCB0cmFuc2Zvcm09InRyYW5zbGF0ZSgwIDIxMS4xNTU3MikiIGZpbGw9IiMxYzNkNzAiIGZvbnQtZmFtaWx5PSJCb3V0cm9zTmV3c0gxLUJvbGQsIEJvdXRyb3NOZXdzSDEiIGZvbnQtc2l6ZT0iMTI2LjM3NDYzIiBmb250LXdlaWdodD0iNzAwIj48dHNwYW4geD0iMCIgeT0iMCI+U0FBSyBJbnRlcm5hdGlvbmFsPC90c3Bhbj48L3RleHQ+CiAgICAgIDwvZz4KICAgICAgPGc+CiAgICAgICAgPHBvbHlnb24gcG9pbnRzPSIxMjg2LjE0MTM0IDEyMS4yMDE3OSAxMjczLjkzMzMgMTAzLjA1NzgzIDEzMjcuODUyMTQgLjY0MjEzIDE0NDAuMTc4MjQgMjEyLjc2MjA5IDE0MTguMzk1MSAyMTIuNzYyMDkgMTMyOC44Njk0OCA0My42Mjk4OCAxMjg2LjE0MTM0IDEyMS4yMDE3OSIgZmlsbD0iIzAwODc1YyIvPgogICAgICAgIDxwb2x5Z29uIHBvaW50cz0iMTMwMi45MDYyIDIxMy4yMjgzNyAxMzA0LjI0MTQ2IDIxNy4yMTI5MyAxMzI2LjAyOTQyIDIxNy4yMTI5MyAxMzI0LjUwMzQxIDIxMy4yMjgzNyAxMzAyLjkwNjIgMjEzLjIyODM3IiBmaWxsPSIjMDA4NzVjIi8+CiAgICAgICAgPHBvbHlnb24gcG9pbnRzPSIxNDc2Ljg5MjAxIDIxMi43NjIxIDE0NTUuNjk3NCAyMTIuNzYyMSAxMzk3LjIwMDU4IDEwMy4wNTc4NSAxNDQ5Ljc2Mjk5IC42NDIxNiAxNDYyLjY0OTI2IDIyLjUyMDE4IDE0MTguOTAzNzEgMTAzLjA1Nzg1IDE0NzYuODkyMDEgMjEyLjc2MjEiIGZpbGw9IiMwMDg3NWMiLz4KICAgICAgICA8cG9seWdvbiBwb2ludHM9IjEzMjkuMjA4NTkgNzIuMDMwNTMgMTI1Mi41NjkyNCAyMTMuMjI4MzcgMTQwNS4zMzkyOCAyMTMuMjI4MzcgMTMyOS4yMDg1OSA3Mi4wMzA1MyIgZmlsbD0iIzFjM2Q3MCIvPgogICAgICAgIDxwYXRoIGQ9Ik0xMzM2LjgzODYyLDE5OS43MDYyN3MtNS4yNTYyNCw2Ljc4MjI0LTguOTg2NDctMS4zNTY0NWwyLjcxMjktMzkuMTY3NDZoLTIuNzEyOWwtMS44MjI3Myw2LjI3MzU4LTMuMDk0NCwxMi43MTY3MXYtMjAuODU1NHMtOC4zMDgyNSw2LjQ0MzEzLTEzLjM5NDkzLDE2LjYxNjVjMCwwLTMuNzMwMjMtNy42MzAwMiw3LjQ2MDQ3LTIwLjM0NjczLDAsMC03Ljc5OTU4LDAtMTguODIwNzMsMTIuNzE2NzEsMCwwLDIuMDM0NjctMTUuMDkwNDksMTguMTQyNS0xOS44MzgwNiwwLDAsMS4zNTY0NS00LjQwODQ2LTE4LjE0MjUsMy4zOTExMiwwLDAsNi40NDMxMy0xMC4zNDI5MiwyMS41MzM2Mi0xMC4xNzMzNywwLDAsOS44MzQyNS0xMi4yMTIxNiwyNC4yNDY1Mi0uMDAyMDYsMCwwLDExLjk1Mzk2LTEuODA0MiwyMi43MjA1MiwxMC4wMDU4NywwLDAtOC40Nzc4LTMuMDUyMDEtMTguOTkwMjgtNS4yNTYyNCwwLDAsMTcuOTcyOTUsMTEuMzYwMjYsMTguOTkwMjgsMjIuMjExODUsMCwwLTYuMjczNTgtMTAuMTczMzctMTkuMzI5NC0xNC4yNDI3MSwwLDAsOC42NDczNiw5LjQ5NTE0LDcuOTY5MTQsMjIuMjExODUsMCwwLTMuMzkxMTItOS44MzQyNS0xMi41NDcxNS0xNy40NjQyOCwwLDAsLjMzOTExLDE2Ljc4NjA1LS41MDg2NywyMS43MDMxOCwwLDAtMS4zNTY0NS0xMy4zOTQ5My02LjQ0MzEzLTE5LjMyOTRsMS4wMTczNCw0MC4xODQ4WiIgZmlsbD0iI2ZmZiIvPgogICAgICAgIDxwYXRoIGQ9Ik0xMTczLjA4NzMyLDI3LjM4MjQybC0xNi4xMDc4MywxNi4yNzczOXMtMTQuMDczMTYtMTIuNzE2NzEtMjguNjU0OTgtMTguMzEyMDZjMCwwLTI1Ljk0MjA4LTcuMjkwOTEtMzguOTk3OSwxMC41MTI0OCwwLDAtMTMuMDU1ODIsMTQuNDEyMjcsMCwzMi43MjQzMywwLDAtMS42ODc2NCw3LjM2MjY4LDM5Ljc2NDg2LDI4LjE0NjMxLDAsMCwzNC4xNjE1OSwxMy4yMjUzOCw0MC43NzQyOCw0MC44NjMwMiwwLDAsMTMuMzk0OTMsMzQuNzU5LTE4LjMxMjA2LDYyLjkwNTMxLDAsMC0xNi43ODYwNSwyMC4wMDc2Mi01OS41MTQxOSwxMi4wMzg0OCwwLDAtMjcuODA3Mi04LjY0NzM2LTM5LjUwNjU3LTI2LjExMTY0bDE1LjI2MDA1LTE4LjM0NTA3czE0LjA3MzE2LDIxLjU2NjY0LDQ0LjI1NDE0LDIyLjc1MzUzYzAsMCw0Ni4yODg4MS0yLjU4NTczLDM0LjU4OTQ0LTQ4LjQyOTQ2LDAsMC0zLjM5MTEyLTEzLjQ1ODUyLTMyLjcyNDMzLTI1LjQ5NywwLDAtMzQuNTg5NDQtMTcuNjMzODMtNDEuNTQxMjQtMjguOTk0MDksMCwwLTE4LjMxMjA2LTIyLjA0MjI5LTkuMTU2MDMtNTEuNTQ1MDUsMCwwLDEzLjczNDA0LTQwLjM2NDkxLDYwLjE5MjQxLTM1Ljk1MTE3LDAsMCwyNy45NzY3NiwyLjg4NzczLDQ5LjY3OTk0LDI2Ljk2NDdaIiBmaWxsPSIjMWMzZDcwIi8+CiAgICAgICAgPHBhdGggZD0iTTExMzcuODY0NTQsMTQwLjIxMzI3bC0yNS4zNjk4Myw0OC45NTkzMnMyNi43Njg2Ny0uODkwMTcsMzIuMzY0MDItMjAuNjY0NjVjMCwwLDQuMDA1NzYtMTMuNzk3NjMtNi45OTQxOS0yOC4yOTQ2N1oiIGZpbGw9IiMwMDg3NWMiLz4KICAgICAgICA8cGF0aCBkPSJNMTI3Ny4zMjQ0MywxNjUuNjI1NDlsMTEuNTkwNi0xOS4zNTk0MkwxMjExLjM2NzExLjY0MjEzbC01Ny40Nzk1MiwxMDkuODc3NjNzMTEuMDIxMTUsNi45NTE4LDEzLjU2NDQ5LDEzLjczNDA0bDQ0LjkzMjM3LTgwLjM2OTU5LDY0LjkzOTk5LDEyMS43NDEyOFoiIGZpbGw9IiMwMDg3NWMiLz4KICAgICAgPC9nPgogICAgPC9nPgogIDwvZz4KPC9zdmc+" alt="SAAK International" />
+        </div>
+    </div>
+
+    <script>
+// === EMBEDDED_DATA_START ===
+const EMBEDDED_EMPLOYEES = [];
+const EMBEDDED_BASE_URL = "";
+// === EMBEDDED_DATA_END ===
+
+        const SAAK_LOGO = "data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN2ZyBpZD0iTGF5ZXJfMiIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB2aWV3Qm94PSIwIDAgMTQ3Ni44OTIwMSAyNjIuOTcwMTgiPgogIDxnIGlkPSJMYXllcl8xLTIiIGRhdGEtbmFtZT0iTGF5ZXJfMSI+CiAgICA8Zz4KICAgICAgPGc+CiAgICAgICAgPGc+CiAgICAgICAgICA8cGF0aCBkPSJNMjY3LjQxOTkxLDBoMTYuNjY4MTJ2OTYuNjMwMDNoLTgwLjQ5ODcydi0xNS4zMDA1Nmg2My44MzA2MVYwWiIgZmlsbD0iIzFjM2Q3MCIvPgogICAgICAgICAgPHBhdGggZD0iTTQwLjQ0MDkyLDM2LjYzODQ4YzcuMzgwNzktMy4yMjE4MSwxNS41ODIxMi00LjgwMjU0LDI0LjU5OTk1LTQuNzUwMjV2NDkuNDQxMjRoMTIuNzI0MzJ2MTUuMzAwNTZoLTI5Ljk1NTU1di00My43MjU2NWMtMTIuMDc4NzUsNi4xMjE4My0yMC43NTA2OCwxNy4yMzEyMy0yNi4wMDk3NCwzMy4zMzYyM2wtMi4xNzQwMSwxMC4zODk0MkgyLjcxNDQzYy41MzY5Ny0xNy45MzExLDcuMDMyODctMzMuNzE0MzIsMTkuNDg3Ny00Ny4zNDk2OCw0Ljc3NjQtNS4yMDQ3NiwxMC44NTYtOS40MjAwNiwxOC4yMzg4LTEyLjY0MTg3Wk0yMi4xMjE2OCwyMC4xMzEyNmgxNi45MDk0NVYzLjIxNzc4aC0xNi45MDk0NXYxNi45MTM0N1pNNDYuMjc5MTksMjAuMTMxMjZoMTYuOTA5NDVWMy4yMTc3OGgtMTYuOTA5NDV2MTYuOTEzNDdaIiBmaWxsPSIjMWMzZDcwIi8+CiAgICAgICAgICA8cGF0aCBkPSJNMTc2LjA0OTEsMzIuMjEwMDFoMTYuNDI4Nzl2NDkuMTE5NDZoMTEuMTExNDF2MTUuMzAwNTZINzUuMTExMzF2LTE1LjMwMDU2aDEwMC45Mzc3OXYtNDkuMTE5NDZaTTE1My45ODUxNiwxMDUuMDg0NzZoMTYuOTExNDZ2MTYuOTA5NDVoLTE2LjkxMTQ2di0xNi45MDk0NVpNMTc4LjE0MjY3LDEwNS4wODQ3NmgxNi45MTE0NnYxNi45MDk0NWgtMTYuOTExNDZ2LTE2LjkwOTQ1WiIgZmlsbD0iIzFjM2Q3MCIvPgogICAgICAgICAgPHBhdGggZD0iTTM0OC45Mjk0NCwzMi4yMTAwMXY2NC40MjAwMmMwLDcuMDg3MTctMS40NzgxNywxMi42NzAwMi00LjQzMDQ5LDE2Ljc0ODU2LTQuNTA4OTIsNC45MzkzLTEwLjk1MDUyLDcuNDA4OTUtMTkuMzI0OCw3LjQwODk1aC0yNi40OTQ0MnYtMTYuMzQ2MzRoMjcuMjk4ODdjNC45OTM2LS40MzAzOCw3LjE2NzYxLTMuMDMyNzYsNi41MjIwNC03LjgxMTE3LTIxLjc0MjE2LDIuMTQ3ODctMzMuMjI5NjUtNS44NTIzNC0zNC40NjQ0Ny0yMy45OTY2MnYtMTguNjAyODFjMS4yODkxMi0xMy4zMTM1OCw4LjU4OTQ3LTIwLjU4NTc3LDIxLjkwMzA1LTIxLjgyMDU5aDI4Ljk5MDIyWk0zMjEuODcxOSw0OC4wNzM2OGMtNC44ODUuNzUyMTYtNy40MDg5NSwzLjk3Mzk2LTcuNTY5ODQsOS42NjEzOXYxMy4xMjg1NmMtLjIxNTE5LDYuMDA5MjEsMi40OTU3OSw5LjUwMDUxLDguMTMyOTUsMTAuNDY1ODRoOS41ODI5NnYtMzMuMjU1NzloLTEwLjE0NjA3WiIgZmlsbD0iIzFjM2Q3MCIvPgogICAgICAgICAgPHBhdGggZD0iTTM3My45MDg1NSwzMS45Njg2OGMxLjEyNjIyLS4wNTIyOSwyLjI1NDQ2LS4wODA0NCwzLjM4MjY5LS4wODA0NCwxLjAxNzYyLS4wNTIyOSwyLjAzOTI3LS4wODA0NCwzLjA1ODkxLS4wODA0NCw4LjA1MjUsMCwxNS41MTM3NCwxLjkwNjU0LDIyLjM4NTcyLDUuNzE1NTksNy42NzY0Miw0LjI5NTc0LDEzLjIwNjk5LDEwLjczOTM1LDE2LjU4OTY4LDE5LjMyNjgxLDMuMzgwNjgsOC41OTE0OCw0Ljg1Njg0LDE2Ljc0ODU2LDQuNDI2NDYsMjQuNDc5MjloMTMuMTI4NTZ2MTUuMzAwNTZoLTc1LjA1MDc3di0xNS4zMDA1Nmg0NC42OTA5OXYtMy4yMjE4MWMtLjY0MzU2LTIwLjEzMTI2LTExLjUxNTY0LTI5LjcxMjIxLTMyLjYxMjIzLTI4Ljc0Njg3di0xNy4zOTIxMloiIGZpbGw9IiMxYzNkNzAiLz4KICAgICAgICAgIDxwYXRoIGQ9Ik01MTIuNjgwNTIsMGgxNi42NjgxMnY5Ni42MzAwM2gtOTIuNDY4MDd2LTE1LjMwMDU2aDc1Ljc5OTk1VjBaIiBmaWxsPSIjMWMzZDcwIi8+CiAgICAgICAgICA8cGF0aCBkPSJNNTU5LjcyMTU2LDk2LjYzMDAzaC0xNi40MjY3OFYwaDE2LjQyNjc4djk2LjYzMDAzWiIgZmlsbD0iIzFjM2Q3MCIvPgogICAgICAgICAgPHBhdGggZD0iTTcxOS41MTg5Nywwdjk2LjYzMDAzaC04NC4zMDk5NGMtMjEuNDE4MzcsMS40NDgtMzMuMjMxNjYtNy40MDg5NS0zNS40MzE4Mi0yNi41NzQ4N3YtMjkuNzkyNjVoMTYuMTA1MDF2MjAuMTMxMjZjLS4xNjA4OSwxMi4wMjY0Niw0LjI5NTc0LDE5LjAwNTAzLDEzLjM2NTg3LDIwLjkzNTdoNzMuODQ0MVYwaDE2LjQyNjc4Wk02NTYuMjI1MTcsMjguOTA3NzZoMTQuNDk2MTF2OC45MzczOWgtMTAuMDY3NjRjLTIuMDM5MjctLjA1MjI5LTMuMDA0NjEuOTQxMi0yLjg5NiwyLjk4MDQ3djcuMDg3MTdoMTIuOTYzNjR2OC42MTU2MWgtMjIuNTQ4NjJ2LTguNjE1NjFoMy4xNDEzNnYtMTAuODcyMDljLS40MzAzOC0zLjQ4NzI3LDEuMjA2NjctNi4yMDIyOCw0LjkxMTE0LTguMTMyOTVaIiBmaWxsPSIjMWMzZDcwIi8+CiAgICAgICAgICA8cGF0aCBkPSJNNzUwLjkzMjk2LDgxLjQwOTkyaDE1LjEzOTY3djE1LjMwMDU2aC0zMS41NjY0NVYuMDgwNDRoMTYuNDI2Nzh2ODEuMzI5NDdaIiBmaWxsPSIjMWMzZDcwIi8+CiAgICAgICAgICA8cGF0aCBkPSJNMTAzNC45NzczOSwzMi4yOTA0NnY2NC40MjAwMmgtMjY4LjkwNDc2di0xNS4zMDA1NmgxNzMuMTU5NjJ2LTI0Ljk2MTk1aDE2LjgzMzAzdjI0Ljk2MTk1aDIyLjQ2NDE1di0zNy4wNDA3MWgxNi45ODk5djM3LjA0MDcxaDIyLjQ2ODE3di00OS4xMTk0NmgxNi45ODk5WiIgZmlsbD0iIzFjM2Q3MCIvPgogICAgICAgIDwvZz4KICAgICAgICA8dGV4dCB0cmFuc2Zvcm09InRyYW5zbGF0ZSgwIDIxMS4xNTU3MikiIGZpbGw9IiMxYzNkNzAiIGZvbnQtZmFtaWx5PSJCb3V0cm9zTmV3c0gxLUJvbGQsIEJvdXRyb3NOZXdzSDEiIGZvbnQtc2l6ZT0iMTI2LjM3NDYzIiBmb250LXdlaWdodD0iNzAwIj48dHNwYW4geD0iMCIgeT0iMCI+U0FBSyBJbnRlcm5hdGlvbmFsPC90c3Bhbj48L3RleHQ+CiAgICAgIDwvZz4KICAgICAgPGc+CiAgICAgICAgPHBvbHlnb24gcG9pbnRzPSIxMjg2LjE0MTM0IDEyMS4yMDE3OSAxMjczLjkzMzMgMTAzLjA1NzgzIDEzMjcuODUyMTQgLjY0MjEzIDE0NDAuMTc4MjQgMjEyLjc2MjA5IDE0MTguMzk1MSAyMTIuNzYyMDkgMTMyOC44Njk0OCA0My42Mjk4OCAxMjg2LjE0MTM0IDEyMS4yMDE3OSIgZmlsbD0iIzAwODc1YyIvPgogICAgICAgIDxwb2x5Z29uIHBvaW50cz0iMTMwMi45MDYyIDIxMy4yMjgzNyAxMzA0LjI0MTQ2IDIxNy4yMTI5MyAxMzI2LjAyOTQyIDIxNy4yMTI5MyAxMzI0LjUwMzQxIDIxMy4yMjgzNyAxMzAyLjkwNjIgMjEzLjIyODM3IiBmaWxsPSIjMDA4NzVjIi8+CiAgICAgICAgPHBvbHlnb24gcG9pbnRzPSIxNDc2Ljg5MjAxIDIxMi43NjIxIDE0NTUuNjk3NCAyMTIuNzYyMSAxMzk3LjIwMDU4IDEwMy4wNTc4NSAxNDQ5Ljc2Mjk5IC42NDIxNiAxNDYyLjY0OTI2IDIyLjUyMDE4IDE0MTguOTAzNzEgMTAzLjA1Nzg1IDE0NzYuODkyMDEgMjEyLjc2MjEiIGZpbGw9IiMwMDg3NWMiLz4KICAgICAgICA8cG9seWdvbiBwb2ludHM9IjEzMjkuMjA4NTkgNzIuMDMwNTMgMTI1Mi41NjkyNCAyMTMuMjI4MzcgMTQwNS4zMzkyOCAyMTMuMjI4MzcgMTMyOS4yMDg1OSA3Mi4wMzA1MyIgZmlsbD0iIzFjM2Q3MCIvPgogICAgICAgIDxwYXRoIGQ9Ik0xMzM2LjgzODYyLDE5OS43MDYyN3MtNS4yNTYyNCw2Ljc4MjI0LTguOTg2NDctMS4zNTY0NWwyLjcxMjktMzkuMTY3NDZoLTIuNzEyOWwtMS44MjI3Myw2LjI3MzU4LTMuMDk0NCwxMi43MTY3MXYtMjAuODU1NHMtOC4zMDgyNSw2LjQ0MzEzLTEzLjM5NDkzLDE2LjYxNjVjMCwwLTMuNzMwMjMtNy42MzAwMiw3LjQ2MDQ3LTIwLjM0NjczLDAsMC03Ljc5OTU4LDAtMTguODIwNzMsMTIuNzE2NzEsMCwwLDIuMDM0NjctMTUuMDkwNDksMTguMTQyNS0xOS44MzgwNiwwLDAsMS4zNTY0NS00LjQwODQ2LTE4LjE0MjUsMy4zOTExMiwwLDAsNi40NDMxMy0xMC4zNDI5MiwyMS41MzM2Mi0xMC4xNzMzNywwLDAsOS44MzQyNS0xMi4yMTIxNiwyNC4yNDY1Mi0uMDAyMDYsMCwwLDExLjk1Mzk2LTEuODA0MiwyMi43MjA1MiwxMC4wMDU4NywwLDAtOC40Nzc4LTMuMDUyMDEtMTguOTkwMjgtNS4yNTYyNCwwLDAsMTcuOTcyOTUsMTEuMzYwMjYsMTguOTkwMjgsMjIuMjExODUsMCwwLTYuMjczNTgtMTAuMTczMzctMTkuMzI5NC0xNC4yNDI3MSwwLDAsOC42NDczNiw5LjQ5NTE0LDcuOTY5MTQsMjIuMjExODUsMCwwLTMuMzkxMTItOS44MzQyNS0xMi41NDcxNS0xNy40NjQyOCwwLDAsLjMzOTExLDE2Ljc4NjA1LS41MDg2NywyMS43MDMxOCwwLDAtMS4zNTY0NS0xMy4zOTQ5My02LjQ0MzEzLTE5LjMyOTRsMS4wMTczNCw0MC4xODQ4WiIgZmlsbD0iI2ZmZiIvPgogICAgICAgIDxwYXRoIGQ9Ik0xMTczLjA4NzMyLDI3LjM4MjQybC0xNi4xMDc4MywxNi4yNzczOXMtMTQuMDczMTYtMTIuNzE2NzEtMjguNjU0OTgtMTguMzEyMDZjMCwwLTI1Ljk0MjA4LTcuMjkwOTEtMzguOTk3OSwxMC41MTI0OCwwLDAtMTMuMDU1ODIsMTQuNDEyMjcsMCwzMi43MjQzMywwLDAtMS42ODc2NCw3LjM2MjY4LDM5Ljc2NDg2LDI4LjE0NjMxLDAsMCwzNC4xNjE1OSwxMy4yMjUzOCw0MC43NzQyOCw0MC44NjMwMiwwLDAsMTMuMzk0OTMsMzQuNzU5LTE4LjMxMjA2LDYyLjkwNTMxLDAsMC0xNi43ODYwNSwyMC4wMDc2Mi01OS41MTQxOSwxMi4wMzg0OCwwLDAtMjcuODA3Mi04LjY0NzM2LTM5LjUwNjU3LTI2LjExMTY0bDE1LjI2MDA1LTE4LjM0NTA3czE0LjA3MzE2LDIxLjU2NjY0LDQ0LjI1NDE0LDIyLjc1MzUzYzAsMCw0Ni4yODg4MS0yLjU4NTczLDM0LjU4OTQ0LTQ4LjQyOTQ2LDAsMC0zLjM5MTEyLTEzLjQ1ODUyLTMyLjcyNDMzLTI1LjQ5NywwLDAtMzQuNTg5NDQtMTcuNjMzODMtNDEuNTQxMjQtMjguOTk0MDksMCwwLTE4LjMxMjA2LTIyLjA0MjI5LTkuMTU2MDMtNTEuNTQ1MDUsMCwwLDEzLjczNDA0LTQwLjM2NDkxLDYwLjE5MjQxLTM1Ljk1MTE3LDAsMCwyNy45NzY3NiwyLjg4NzczLDQ5LjY3OTk0LDI2Ljk2NDdaIiBmaWxsPSIjMWMzZDcwIi8+CiAgICAgICAgPHBhdGggZD0iTTExMzcuODY0NTQsMTQwLjIxMzI3bC0yNS4zNjk4Myw0OC45NTkzMnMyNi43Njg2Ny0uODkwMTcsMzIuMzY0MDItMjAuNjY0NjVjMCwwLDQuMDA1NzYtMTMuNzk3NjMtNi45OTQxOS0yOC4yOTQ2N1oiIGZpbGw9IiMwMDg3NWMiLz4KICAgICAgICA8cGF0aCBkPSJNMTI3Ny4zMjQ0MywxNjUuNjI1NDlsMTEuNTkwNi0xOS4zNTk0MkwxMjExLjM2NzExLjY0MjEzbC01Ny40Nzk1MiwxMDkuODc3NjNzMTEuMDIxMTUsNi45NTE4LDEzLjU2NDQ5LDEzLjczNDA0bDQ0LjkzMjM3LTgwLjM2OTU5LDY0LjkzOTk5LDEyMS43NDEyOFoiIGZpbGw9IiMwMDg3NWMiLz4KICAgICAgPC9nPgogICAgPC9nPgogIDwvZz4KPC9zdmc+";
+        const SAAK_PROFILE_URL = "https://drive.google.com/file/d/1uiUOHaJy0OzMCqUF8CxK-wEhtVXirwnP/view?usp=drive_link";
+        let employees = [];
+        let currentPhoto = null;
+        let currentPhotoTransform = { x: 0, y: 0, zoom: 100, naturalWidth: 0, naturalHeight: 0 };
+        let editingIndex = -1;
+        let currentNFCLink = "";
+        let dragState = { isDragging: false, startX: 0, startY: 0, origX: 0, origY: 0 };
+
+        function loadData() {
+            const saved = localStorage.getItem('saak_employees');
+            if (saved) {
+                employees = JSON.parse(saved);
+            } else if (EMBEDDED_EMPLOYEES.length > 0) {
+                employees = EMBEDDED_EMPLOYEES.slice();
+            }
+            const savedURL = localStorage.getItem('saak_base_url');
+            if (savedURL) {
+                document.getElementById('baseURL').value = savedURL;
+            } else if (EMBEDDED_BASE_URL) {
+                document.getElementById('baseURL').value = EMBEDDED_BASE_URL;
+            }
+        }
+
+        function saveToStorage() {
+            localStorage.setItem('saak_employees', JSON.stringify(employees));
+        }
+
+        function lookupEmployee(empId) {
+            let emp = employees.find(e => String(e.id) === String(empId));
+            if (!emp && EMBEDDED_EMPLOYEES.length > 0) {
+                emp = EMBEDDED_EMPLOYEES.find(e => String(e.id) === String(empId));
+            }
+            return emp;
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const baseURLInput = document.getElementById('baseURL');
+            if (baseURLInput) {
+                baseURLInput.addEventListener('input', (e) => {
+                    localStorage.setItem('saak_base_url', e.target.value);
+                    renderEmployees();
+                });
+            }
+            setupCropperEvents();
+        });
+
+        function setupCropperEvents() {
+            const circle = document.getElementById('cropperCircle');
+            if (!circle) return;
+            circle.addEventListener('mousedown', startDrag);
+            circle.addEventListener('touchstart', startDrag, {passive: false});
+            document.addEventListener('mousemove', doDrag);
+            document.addEventListener('touchmove', doDrag, {passive: false});
+            document.addEventListener('mouseup', endDrag);
+            document.addEventListener('touchend', endDrag);
+        }
+
+        function startDrag(e) {
+            e.preventDefault();
+            dragState.isDragging = true;
+            const point = e.touches ? e.touches[0] : e;
+            dragState.startX = point.clientX;
+            dragState.startY = point.clientY;
+            dragState.origX = currentPhotoTransform.x;
+            dragState.origY = currentPhotoTransform.y;
+        }
+
+        function doDrag(e) {
+            if (!dragState.isDragging) return;
+            e.preventDefault();
+            const point = e.touches ? e.touches[0] : e;
+            const dx = point.clientX - dragState.startX;
+            const dy = point.clientY - dragState.startY;
+            currentPhotoTransform.x = dragState.origX + dx;
+            currentPhotoTransform.y = dragState.origY + dy;
+            applyCropperTransform();
+        }
+
+        function endDrag() { dragState.isDragging = false; }
+
+        function applyCropperTransform() {
+            const img = document.getElementById('cropperImg');
+            if (!img || !currentPhotoTransform.naturalWidth) return;
+            const t = currentPhotoTransform;
+            const scale = t.zoom / 100;
+            const displayWidth = t.naturalWidth * scale;
+            const displayHeight = t.naturalHeight * scale;
+            img.style.width = displayWidth + 'px';
+            img.style.height = displayHeight + 'px';
+            img.style.transform = 'translate(' + t.x + 'px, ' + t.y + 'px)';
+        }
+
+        function updateZoom() {
+            const slider = document.getElementById('zoomSlider');
+            currentPhotoTransform.zoom = parseInt(slider.value);
+            document.getElementById('zoomValue').textContent = slider.value + '%';
+            applyCropperTransform();
+        }
+
+        // Resize image to reduce file size
+        function resizeImage(dataURL, maxSize, callback) {
+            const img = new Image();
+            img.onload = () => {
+                let w = img.naturalWidth;
+                let h = img.naturalHeight;
+                if (w > maxSize || h > maxSize) {
+                    const ratio = Math.min(maxSize / w, maxSize / h);
+                    w = Math.round(w * ratio);
+                    h = Math.round(h * ratio);
+                }
+                const canvas = document.createElement('canvas');
+                canvas.width = w;
+                canvas.height = h;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, w, h);
+                callback(canvas.toDataURL('image/jpeg', 0.88));
+            };
+            img.src = dataURL;
+        }
+
+        function handlePhotoUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    resizeImage(e.target.result, 600, (resized) => {
+                        currentPhoto = resized;
+                        const img = document.getElementById('cropperImg');
+                        img.src = currentPhoto;
+                        img.onload = () => {
+                            const circleSize = 200;
+                            const naturalW = img.naturalWidth;
+                            const naturalH = img.naturalHeight;
+                            const scale = Math.max(circleSize / naturalW, circleSize / naturalH);
+                            const initialZoom = Math.round(scale * 100);
+                            currentPhotoTransform = {
+                                x: (circleSize - naturalW * scale) / 2,
+                                y: (circleSize - naturalH * scale) / 2,
+                                zoom: initialZoom,
+                                naturalWidth: naturalW,
+                                naturalHeight: naturalH
+                            };
+                            document.getElementById('zoomSlider').value = initialZoom;
+                            document.getElementById('zoomValue').textContent = initialZoom + '%';
+                            applyCropperTransform();
+                            document.getElementById('photoCropper').classList.add('active');
+                        };
+                    });
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function showSuccessMsg(text) {
+            const msg = document.getElementById('successMsg');
+            msg.textContent = text;
+            msg.classList.add('show');
+            setTimeout(() => msg.classList.remove('show'), 3000);
+        }
+
+        function saveEmployee() {
+            const name = document.getElementById('empName').value.trim();
+            const position = document.getElementById('empPosition').value.trim();
+            const phone = document.getElementById('empPhone').value.trim();
+            const email = document.getElementById('empEmail').value.trim();
+
+            if (!name || !position || !phone || !email) {
+                alert('يرجى تعبئة جميع الحقول الإلزامية');
+                return;
+            }
+
+            const photoTransform = currentPhoto ? {
+                x: currentPhotoTransform.x,
+                y: currentPhotoTransform.y,
+                zoom: currentPhotoTransform.zoom,
+                naturalWidth: currentPhotoTransform.naturalWidth,
+                naturalHeight: currentPhotoTransform.naturalHeight,
+                cropperSize: 200
+            } : null;
+
+            const employee = {
+                id: editingIndex >= 0 ? employees[editingIndex].id : Date.now().toString(36) + Math.random().toString(36).substr(2, 5),
+                name, position, phone, email,
+                photo: currentPhoto || (editingIndex >= 0 ? employees[editingIndex].photo : null),
+                photoTransform: photoTransform || (editingIndex >= 0 ? employees[editingIndex].photoTransform : null)
+            };
+
+            if (editingIndex >= 0) {
+                employees[editingIndex] = employee;
+                showSuccessMsg('✅ تم التحديث بنجاح!');
+            } else {
+                employees.push(employee);
+                showSuccessMsg('✅ تم إضافة الموظف بنجاح!');
+                editingIndex = employees.length - 1;
+                document.getElementById('formTitle').textContent = '✏️ تعديل الموظف';
+            }
+
+            saveToStorage();
+            renderEmployees();
+        }
+
+        function resetForm() {
+            document.getElementById('empName').value = '';
+            document.getElementById('empPosition').value = '';
+            document.getElementById('empPhone').value = '';
+            document.getElementById('empEmail').value = '';
+            document.getElementById('photoCropper').classList.remove('active');
+            document.getElementById('photoInput').value = '';
+            currentPhoto = null;
+            currentPhotoTransform = { x: 0, y: 0, zoom: 100, naturalWidth: 0, naturalHeight: 0 };
+            editingIndex = -1;
+            document.getElementById('formTitle').textContent = '➕ إضافة موظف';
+        }
+
+        function editEmployee(index) {
+            const emp = employees[index];
+            document.getElementById('empName').value = emp.name;
+            document.getElementById('empPosition').value = emp.position;
+            document.getElementById('empPhone').value = emp.phone;
+            document.getElementById('empEmail').value = emp.email;
+            
+            if (emp.photo) {
+                currentPhoto = emp.photo;
+                const img = document.getElementById('cropperImg');
+                img.src = emp.photo;
+                img.onload = () => {
+                    if (emp.photoTransform) {
+                        currentPhotoTransform = Object.assign({}, emp.photoTransform);
+                    } else {
+                        const circleSize = 200;
+                        const scale = Math.max(circleSize / img.naturalWidth, circleSize / img.naturalHeight);
+                        currentPhotoTransform = {
+                            x: (circleSize - img.naturalWidth * scale) / 2,
+                            y: (circleSize - img.naturalHeight * scale) / 2,
+                            zoom: Math.round(scale * 100),
+                            naturalWidth: img.naturalWidth,
+                            naturalHeight: img.naturalHeight,
+                            cropperSize: 200
+                        };
+                    }
+                    document.getElementById('zoomSlider').value = currentPhotoTransform.zoom;
+                    document.getElementById('zoomValue').textContent = currentPhotoTransform.zoom + '%';
+                    applyCropperTransform();
+                    document.getElementById('photoCropper').classList.add('active');
+                };
+            } else {
+                currentPhoto = null;
+                document.getElementById('photoCropper').classList.remove('active');
+            }
+
+            editingIndex = index;
+            document.getElementById('formTitle').textContent = '✏️ تعديل الموظف';
+            window.scrollTo({top: 0, behavior: 'smooth'});
+        }
+
+        function deleteEmployee(index) {
+            if (confirm('هل أنت متأكد من حذف هذا الموظف؟')) {
+                employees.splice(index, 1);
+                saveToStorage();
+                renderEmployees();
+                if (editingIndex === index) resetForm();
+            }
+        }
+
+        function getNFCLink(empId) {
+            let baseURL = document.getElementById('baseURL').value.trim();
+            if (!baseURL) {
+                baseURL = window.location.origin + window.location.pathname;
+            }
+            if (!baseURL.endsWith('/') && !baseURL.includes('?')) {
+                baseURL += '/';
+            }
+            return baseURL + '?id=' + empId;
+        }
+
+        function showNFCLink(index) {
+            const emp = employees[index];
+            currentNFCLink = getNFCLink(emp.id);
+            document.getElementById('nfcEmployeeName').textContent = emp.name;
+            document.getElementById('nfcLinkText').textContent = currentNFCLink;
+            document.getElementById('nfcModal').classList.add('active');
+        }
+
+        function closeNFCModal() {
+            document.getElementById('nfcModal').classList.remove('active');
+        }
+
+        function copyNFCLink() {
+            navigator.clipboard.writeText(currentNFCLink).then(() => {
+                alert('✅ تم نسخ الرابط بنجاح!');
+            });
+        }
+
+        function downloadVCard(empId) {
+            const emp = lookupEmployee(empId);
+            if (!emp) return;
+            const lines = [
+                'BEGIN:VCARD',
+                'VERSION:3.0',
+                'FN:' + emp.name,
+                'TITLE:' + emp.position,
+                'TEL;TYPE=CELL:' + emp.phone,
+                'EMAIL:' + emp.email,
+                'ORG:SAAK INTERNATIONAL COMPANY',
+                'ADR:;;ABDULLAH ALMAKHDOUB ST, ALFALAH DISTRICT;RIYADH;;13314;SA',
+                'URL:https://saaksa.com/',
+                'END:VCARD'
+            ];
+            const vcard = lines.join('\n');
+            const blob = new Blob([vcard], { type: 'text/vcard' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = emp.name.replace(/\s+/g, '_') + '.vcf';
+            link.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function buildPhotoHTML(emp, targetSize) {
+            if (!emp.photo) {
+                return '<div class="vcard-photo-placeholder">👤</div>';
+            }
+            if (!emp.photoTransform) {
+                return '<div class="vcard-photo-circle" style="width:' + targetSize + 'px; height:' + targetSize + 'px;">' +
+                    '<img src="' + emp.photo + '" style="width:100%; height:100%; object-fit:cover; position:relative;" />' +
+                    '</div>';
+            }
+            const t = emp.photoTransform;
+            const scaleFactor = targetSize / t.cropperSize;
+            const x = t.x * scaleFactor;
+            const y = t.y * scaleFactor;
+            const w = t.naturalWidth * (t.zoom / 100) * scaleFactor;
+            const h = t.naturalHeight * (t.zoom / 100) * scaleFactor;
+            return '<div class="vcard-photo-circle" style="width:' + targetSize + 'px; height:' + targetSize + 'px;">' +
+                '<img src="' + emp.photo + '" style="width:' + w + 'px; height:' + h + 'px; transform:translate(' + x + 'px, ' + y + 'px);" />' +
+                '</div>';
+        }
+
+        // Globe icon matching the screenshot
+        const GLOBE_ICON_FILL = '<svg viewBox="0 0 24 24" fill="none" stroke="#04875D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><ellipse cx="12" cy="12" rx="4" ry="10"/><path d="M3.5 7 Q12 5 20.5 7"/><path d="M3.5 17 Q12 19 20.5 17"/></svg>';
+        const GLOBE_ICON_STROKE_WHITE = '<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><ellipse cx="12" cy="12" rx="4" ry="10"/><path d="M3.5 7 Q12 5 20.5 7"/><path d="M3.5 17 Q12 19 20.5 17"/></svg>';
+
+        function buildCardHTML(emp, withNFCLink) {
+            const photoHTML = buildPhotoHTML(emp, 130);
+            const nfcLink = getNFCLink(emp.id);
+            const phoneIconSvg = '<svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+            const emailIconSvg = '<svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" stroke-linecap="round" stroke-linejoin="round"/><polyline points="22,6 12,13 2,6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+            return '<div class="vcard">' +
+                '<div class="vcard-top">' +
+                    '<div class="vcard-photo-wrapper">' + photoHTML + '</div>' +
+                    '<div class="vcard-name">' + emp.name + '</div>' +
+                    '<div class="vcard-position">' + emp.position + '</div>' +
+                    '<div class="vcard-actions">' +
+                        '<a href="tel:' + emp.phone + '" class="vcard-action">' +
+                            '<div class="vcard-action-icon">' + phoneIconSvg + '</div>' +
+                            '<div class="vcard-action-label">CALL</div>' +
+                        '</a>' +
+                        '<a href="mailto:' + emp.email + '" class="vcard-action">' +
+                            '<div class="vcard-action-icon">' + emailIconSvg + '</div>' +
+                            '<div class="vcard-action-label">EMAIL</div>' +
+                        '</a>' +
+                        '<a href="https://saaksa.com/" target="_blank" class="vcard-action">' +
+                            '<div class="vcard-action-icon">' + GLOBE_ICON_STROKE_WHITE + '</div>' +
+                            '<div class="vcard-action-label">WEB</div>' +
+                        '</a>' +
+                    '</div>' +
+                '</div>' +
+                '<div class="vcard-bottom">' +
+                    '<div class="vcard-info-box">' +
+                        '<div class="info-row">' +
+                            '<div class="info-icon"><svg viewBox="0 0 24 24"><path d="M20 15.5c-1.25 0-2.45-.2-3.57-.57-.35-.11-.74-.03-1.02.24l-2.2 2.2c-2.83-1.44-5.15-3.75-6.59-6.59l2.2-2.21c.28-.27.36-.66.25-1.01C8.7 6.45 8.5 5.25 8.5 4c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1 0 9.39 7.61 17 17 17 .55 0 1-.45 1-1v-3.5c0-.55-.45-1-1-1z"/></svg></div>' +
+                            '<div class="info-text"><a href="tel:' + emp.phone + '">' + emp.phone + '</a></div>' +
+                        '</div>' +
+                        '<div class="info-divider"></div>' +
+                        '<div class="info-row">' +
+                            '<div class="info-icon"><svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg></div>' +
+                            '<div class="info-text"><a href="mailto:' + emp.email + '">' + emp.email.toUpperCase() + '</a></div>' +
+                        '</div>' +
+                        '<div class="info-divider"></div>' +
+                        '<div class="info-row">' +
+                            '<div class="info-icon"><svg viewBox="0 0 24 24"><path d="M20 6h-4V4c0-1.11-.89-2-2-2h-4c-1.11 0-2 .89-2 2v2H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-6 0h-4V4h4v2z"/></svg></div>' +
+                            '<div class="info-text">SAAK INTERNATIONAL COMPANY</div>' +
+                        '</div>' +
+                        '<div class="info-divider"></div>' +
+                        '<div class="info-row with-address">' +
+                            '<div class="info-icon"><svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg></div>' +
+                            '<div class="info-text">' +
+                                '<div class="address-text">ABDULLAH ALMAKHDOUB ST,<br>ALFALAH DISTRICT, RIYADH 13314</div>' +
+                                '<a href="https://www.google.com/maps?q=SAAK+International+Company,+Sheikh+Abdullah+Almakhdoub+st,+Alfalah+district,+Riyadh+13314" target="_blank" class="show-map">SHOW IN MAP</a>' +
+                            '</div>' +
+                        '</div>' +
+                        '<div class="info-divider"></div>' +
+                        '<div class="info-row">' +
+                            '<div class="info-icon">' + GLOBE_ICON_FILL + '</div>' +
+                            '<div class="info-text"><a href="https://saaksa.com/" target="_blank">HTTPS://SAAKSA.COM/</a></div>' +
+                        '</div>' +
+                        '<div class="info-divider"></div>' +
+                        '<div class="info-row">' +
+                            '<div class="info-icon"><svg viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg></div>' +
+                            '<div class="info-text"><a href="' + SAAK_PROFILE_URL + '" target="_blank">SAAK PROFILE</a></div>' +
+                        '</div>' +
+                    '</div>' +
+                    '<button class="save-contacts-btn" onclick="downloadVCard(\'' + emp.id + '\')">' +
+                        '<svg viewBox="0 0 24 24"><path d="M19 3H5c-1.11 0-2 .89-2 2v14c0 1.11.89 2 2 2h14c1.11 0 2-.89 2-2V5c0-1.11-.89-2-2-2zm-7 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm6 12H6v-1c0-2 4-3.1 6-3.1s6 1.1 6 3.1v1z"/></svg>' +
+                        '<span>SAVE TO CONTACTS</span>' +
+                    '</button>' +
+                    '<div class="vcard-logo"><img src="' + SAAK_LOGO + '" alt="SAAK International" /></div>' +
+                '</div>' +
+            '</div>' +
+            (withNFCLink ? '<div class="nfc-link-box"><strong>🔗 NFC Link:</strong><br>' + nfcLink + '</div>' : '');
+        }
+
+        function renderEmployees() {
+            const container = document.getElementById('employeesList');
+            document.getElementById('employeeCount').textContent = employees.length;
+            if (employees.length === 0) {
+                container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">👥</div><h3>لا يوجد موظفين بعد</h3><p>ابدأ بإضافة أول موظف من النموذج على اليمين</p></div>';
+                return;
+            }
+            container.innerHTML = '<div class="employees-grid">' + employees.map((emp, index) => 
+                '<div>' +
+                    buildCardHTML(emp, true) +
+                    '<div class="card-actions">' +
+                        '<button class="btn-edit" onclick="editEmployee(' + index + ')">✏️ تعديل</button>' +
+                        '<button class="btn-nfc" onclick="showNFCLink(' + index + ')">🔗 نسخ الرابط</button>' +
+                        '<button class="btn-delete-card" onclick="deleteEmployee(' + index + ')">🗑️ حذف</button>' +
+                    '</div>' +
+                '</div>'
+            ).join('') + '</div>';
+        }
+
+        function openAdminLinksModal() {
+            if (employees.length === 0) {
+                alert('لا يوجد موظفين بعد. أضف موظفين أولاً.');
+                return;
+            }
+            const baseURL = document.getElementById('baseURL').value.trim();
+            if (!baseURL) {
+                if (!confirm('⚠️ لم يتم إدخال رابط الموقع المستضاف.\n\nالروابط ستستخدم الرابط المحلي. هل تريد المتابعة؟')) {
+                    return;
+                }
+            }
+            const container = document.getElementById('adminLinksList');
+            container.innerHTML = employees.map(emp => {
+                const link = getNFCLink(emp.id);
+                return '<div class="admin-link-item">' +
+                    '<div class="admin-link-item-header">' +
+                        '<div class="admin-link-item-name">' + emp.name + '</div>' +
+                        '<div class="admin-link-item-position">' + emp.position + '</div>' +
+                    '</div>' +
+                    '<div class="admin-link-item-url">' + link + '</div>' +
+                    '<div class="admin-link-item-actions">' +
+                        '<button class="btn-copy-mini" onclick="copyLinkToClipboard(\'' + link + '\', this)">📋 نسخ الرابط</button>' +
+                        '<button class="btn-open-mini" onclick="window.open(\'' + link + '\', \'_blank\')">👁️ معاينة</button>' +
+                    '</div>' +
+                '</div>';
+            }).join('');
+            document.getElementById('adminLinksModal').classList.add('active');
+        }
+
+        function closeAdminLinksModal() {
+            document.getElementById('adminLinksModal').classList.remove('active');
+        }
+
+        function copyLinkToClipboard(link, btn) {
+            navigator.clipboard.writeText(link).then(() => {
+                const originalText = btn.textContent;
+                btn.textContent = '✅ تم النسخ';
+                setTimeout(() => { btn.textContent = originalText; }, 2000);
+            });
+        }
+
+        function copyAllLinks() {
+            const text = employees.map(emp => emp.name + ' - ' + emp.position + '\n' + getNFCLink(emp.id)).join('\n\n');
+            navigator.clipboard.writeText(text).then(() => {
+                alert('✅ تم نسخ جميع الروابط!');
+            });
+        }
+
+        function exportLinksAsCSV() {
+            const csv = 'Name,Position,Phone,Email,Link\n' + employees.map(emp => 
+                '"' + emp.name + '","' + emp.position + '","' + emp.phone + '","' + emp.email + '","' + getNFCLink(emp.id) + '"'
+            ).join('\n');
+            const blob = new Blob([csv], {type: 'text/csv;charset=utf-8;'});
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'saak_employee_links_' + new Date().toISOString().split('T')[0] + '.csv';
+            link.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function exportData() {
+            if (employees.length === 0) {
+                alert('لا توجد بيانات للتصدير');
+                return;
+            }
+            const dataStr = JSON.stringify(employees, null, 2);
+            const blob = new Blob([dataStr], {type: 'application/json'});
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'saak_employees_' + new Date().toISOString().split('T')[0] + '.json';
+            link.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function importData(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const data = JSON.parse(e.target.result);
+                        if (Array.isArray(data)) {
+                            if (confirm('سيتم استيراد ' + data.length + ' موظف.\n\nموافق = استبدال الكل\nإلغاء = إضافة للموجود')) {
+                                employees = data;
+                            } else {
+                                employees = employees.concat(data);
+                            }
+                            saveToStorage();
+                            renderEmployees();
+                            alert('✅ تم الاستيراد بنجاح');
+                        }
+                    } catch (err) {
+                        alert('خطأ في قراءة الملف');
+                    }
+                };
+                reader.readAsText(file);
+            }
+        }
+
+        // Generate publish version - HTML with employee data embedded
+        function generatePublishVersion() {
+            if (employees.length === 0) {
+                alert('لا يوجد موظفين. أضف موظفين أولاً.');
+                return;
+            }
+
+            const baseURL = document.getElementById('baseURL').value.trim();
+            if (!baseURL) {
+                if (!confirm('⚠️ لم يتم إدخال رابط الموقع.\nهل تريد المتابعة بدون رابط أساسي؟')) {
+                    return;
+                }
+            }
+
+            // Get the entire HTML
+            let html = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+
+            // Build new data section
+            const newDataBlock = '// === EMBEDDED_DATA_START ===\n' +
+                'const EMBEDDED_EMPLOYEES = ' + JSON.stringify(employees) + ';\n' +
+                'const EMBEDDED_BASE_URL = ' + JSON.stringify(baseURL) + ';\n' +
+                '// === EMBEDDED_DATA_END ===';
+
+            // Replace between markers
+            const startMarker = '// === EMBEDDED_DATA_START ===';
+            const endMarker = '// === EMBEDDED_DATA_END ===';
+            const startIdx = html.indexOf(startMarker);
+            const endIdx = html.indexOf(endMarker);
+            
+            if (startIdx === -1 || endIdx === -1) {
+                alert('خطأ: لم يتم العثور على علامات البيانات في الملف');
+                return;
+            }
+            
+            html = html.substring(0, startIdx) + newDataBlock + html.substring(endIdx + endMarker.length);
+
+            // Download
+            const blob = new Blob([html], {type: 'text/html'});
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'index.html';
+            link.click();
+            URL.revokeObjectURL(url);
+
+            alert('✅ تم تحميل ملف النشر!\n\nخطوات النشر:\n1. ارفع الملف "index.html" على Netlify\n2. الروابط الموجودة بتشتغل مع أي شخص\n3. كل ما تعدل، أعد إنشاء النسخة وارفعها');
+        }
+
+        // Check if URL has ?id= - show single employee view only
+        function checkSingleView() {
+            const params = new URLSearchParams(window.location.search);
+            const empId = params.get('id');
+            
+            if (empId) {
+                // Hide admin completely
+                document.getElementById('adminContainer').style.display = 'none';
+                
+                const emp = lookupEmployee(empId);
+                if (emp) {
+                    const singleView = document.getElementById('singleViewContainer');
+                    singleView.style.display = 'block';
+                    singleView.innerHTML = buildCardHTML(emp, false);
+                    document.title = emp.name + ' - SAAK International';
+                } else {
+                    // Show clean not-found page, NOT admin
+                    document.getElementById('notFoundPage').classList.add('show');
+                    document.title = 'Not Found - SAAK International';
+                }
+                return true;
+            }
+            return false;
+        }
+
+        loadData();
+        if (!checkSingleView()) {
+            renderEmployees();
+        }
+    </script>
+</body>
+</html>
