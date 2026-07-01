@@ -1085,10 +1085,10 @@ const EMBEDDED_SHEETS_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vS8
                 'FN:' + emp.name,
                 'ORG:SAAK INTERNATIONAL COMPANY',
                 'TITLE:' + emp.position,
-                'TEL;TYPE=WORK,VOICE:' + emp.phone,
-                'EMAIL;TYPE=INTERNET:' + emp.email,
-                'ADR;TYPE=WORK:;;ABDULLAH ALMAKHDOUB ST, ALFALAH DISTRICT;RIYADH;;13314;SA',
-                'URL;TYPE=WORK:https://saaksa.com/',
+                'TEL:' + emp.phone,
+                'EMAIL:' + emp.email,
+                'ADR:;;ABDULLAH ALMAKHDOUB ST, ALFALAH DISTRICT;RIYADH;;13314;SA',
+                'URL:https://saaksa.com/',
                 'END:VCARD'
             ];
             const vcard = lines.join('\r\n');
