@@ -197,6 +197,26 @@
         .not-found h2 { color: #193D71; margin: 20px 0 15px; }
         .not-found p { color: #666; line-height: 1.6; }
         .not-found img { max-width: 180px; margin-top: 30px; }
+        .ack-footer{
+    margin-top:18px;
+    padding-top:14px;
+    border-top:1px solid #e8ecf0;
+    text-align:center;
+}
+
+.ack-footer-ar{
+    display:block;
+    font-size:14px;
+    font-weight:600;
+    color:#16355f;
+}
+
+.ack-footer-en{
+    display:block;
+    margin-top:4px;
+    font-size:12px;
+    color:#8a94a3;
+}
     </style>
 </head>
 <body>
@@ -248,8 +268,8 @@
                         </div>
                     </div>
                     <div class="ack-box">
-                        <div class="ack-text-ar">أقر بأنني استلمت بطاقة الموظف الخاصة بي، وأتحمل مسؤولية المحافظة عليها واستخدامها وفق سياسات الشركة.</div>
-                        <div class="ack-text-en">I acknowledge that I have received my employee card and I am responsible for maintaining it and using it in accordance with company policies.</div>
+                        <div class="ack-text-ar">أقر بأنني استلمت بطاقة الموظف الخاصة بي، وأتحمل مسؤولية المحافظة عليها واستخدامها وفق سياسات الشركة. كما ألتزم بإعادتها إلى الشركة عند انتهاء علاقة العمل.</div>
+                        <div class="ack-text-en">I acknowledge that I have received my employee card and I am responsible for maintaining it and using it in accordance with company policies. I also undertake to return it to the company upon the termination of my employment.</div>
                         <div class="checkbox-wrapper" onclick="toggleCB(event)">
                             <input type="checkbox" id="ackCB" />
                             <div class="checkbox-labels">
@@ -257,6 +277,10 @@
                                 <span class="checkbox-label-en">I agree to the above acknowledgment</span>
                             </div>
                         </div>
+                        <div class="ack-footer">
+    <span class="ack-footer-ar">إدارة الموارد البشرية</span>
+    <span class="ack-footer-en">Human Resources Department</span>
+</div>
                     </div>
                     <button class="submit-btn" id="submitBtn" onclick="submitAck()">تأكيد الاستلام<span class="en">Confirm Receipt</span></button>
                 </div>
