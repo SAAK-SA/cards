@@ -235,8 +235,22 @@ async function init() {
     var p = new URLSearchParams(window.location.search);
     var empId = p.get('id');
     if (!empId) { showPage('notFoundPage'); return; }
-    currentEmp = await fetchSheets(empId);
+
+    // Try cached data first (fast)
+    var cached = localStorage.getItem('saak_emp_' + empId);
+    if (cached) {
+        try { currentEmp = JSON.parse(cached); } catch(e) { currentEmp = null; }
+    }
+
+    // Fetch from Sheets (may be slow)
+    var fresh = await fetchSheets(empId);
+    if (fresh) {
+        currentEmp = fresh;
+        localStorage.setItem('saak_emp_' + empId, JSON.stringify(fresh));
+    }
+
     if (!currentEmp) { showPage('notFoundPage'); return; }
+
     var activated = localStorage.getItem('saak_act_' + empId);
     if (activated) { showVCard(currentEmp); } else { document.getElementById('receiptDate').valueAsDate = new Date(); showPage('ackPage'); }
 }
@@ -249,9 +263,10 @@ function parseCSV(line) {
 
 async function fetchSheets(id) {
     if(!SHEETS_URL) return null;
+    for (var attempt = 0; attempt < 2; attempt++) {
     try {
-        var r = await fetch(SHEETS_URL);
-        if(!r.ok) return null;
+        var r = await fetch(SHEETS_URL + '&t=' + Date.now());
+        if(!r.ok) { continue; }
         var csv = await r.text();
         var lines = csv.split(/\r?\n/).filter(function(l){return l.trim();});
         if(lines.length<2) return null;
@@ -260,7 +275,9 @@ async function fetchSheets(id) {
         if(ii===-1) return null;
         for(var i=1;i<lines.length;i++){var c=parseCSV(lines[i]);if(String(c[ii]).trim()===String(id).trim()) return {id:c[ii],name:c[ni]||'',position:c[pi]||'',phone:c[phi]||'',email:c[ei]||''};}
         return null;
-    } catch(e){return null;}
+    } catch(e){ continue; }
+    }
+    return null;
 }
 
 function showPage(id){document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});document.getElementById(id).classList.add('active');}
