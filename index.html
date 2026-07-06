@@ -228,27 +228,28 @@ var currentEmp = null;
 var photoData = null;
 
 // === حط رابط Google Sheets هنا ===
-var SHEETS_URL = "";
+var SHEETS_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vS8S1szszQ0TA8pOFXkorshMroYiUnBSTg53_969AE3oF1UpqG1iMUdg5MWQH4EDRJh5L4e8K4EbW_d/pub?gid=0&single=true&output=csv";
 // =================================
 var ACTIVATIONS_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRwLcCA71kwh5YSBGRH7mEOiurqGEU30jcJKHJNVbFzPzU4MUB1ohOGwsQcTfJEDbeYQC3V5Cf1xFrO/pub?gid=0&single=true&output=csv";
 
 async function checkActivation(empId) {
     // Check localStorage first (fast)
     if (localStorage.getItem('saak_act_' + empId)) return true;
-    // Check activations sheet
-    if (!ACTIVATIONS_URL) return false;
+    // Check via Apps Script API (real-time, no cache delay)
     try {
-        var r = await fetch(ACTIVATIONS_URL + '&t=' + Date.now());
+        var r = await fetch(SCRIPT_URL + '?check=' + encodeURIComponent(empId));
         if (!r.ok) return false;
-        var csv = await r.text();
-        var lines = csv.split(/\r?\n/).filter(function(l){return l.trim();});
-        if (lines.length < 2) return false;
-        // Check if empId exists in any column (url_id column or others)
-        for (var i = 1; i < lines.length; i++) {
-            if (lines[i].indexOf(empId) !== -1) return true;
-        }
-        return false;
-    } catch(e) { return false; }
+        var data = await r.json();
+        return data.activated === true;
+    } catch(e) {
+        // Fallback: try ACTIVATIONS_URL CSV
+        try {
+            var r2 = await fetch(ACTIVATIONS_URL + '&t=' + Date.now());
+            if (!r2.ok) return false;
+            var csv = await r2.text();
+            return csv.indexOf(empId) !== -1;
+        } catch(e2) { return false; }
+    }
 }
 
 async function init() {
